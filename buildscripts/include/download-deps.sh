@@ -77,6 +77,7 @@ if [ ! -d mpv ]; then
 	git remote add origin https://github.com/mpv-player/mpv.git
 	git fetch --depth 1 origin $v_mpv
 	git checkout FETCH_HEAD
+	git apply ../../patches/mpv_sub_geometry_highlight.patch
 	cd ..
 fi
 

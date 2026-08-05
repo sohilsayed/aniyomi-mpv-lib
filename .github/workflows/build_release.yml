@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     tags:
-    - '*'
+    - '[0-9]*'
 
   workflow_dispatch:
 
@@ -55,3 +55,11 @@ jobs:
           aniyomi-mpv-lib-${{ env.VERSION_TAG }}.aar
         draft: false
         prerelease: false
+
+    # Trigger the JitPack build only after the GitHub Release exists so the
+    # jitpack.yml wget can find the AAR. The automatic tag-triggered JitPack
+    # build races this workflow and would fail on a missing release.
+    - name: Trigger JitPack build
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        curl -sL "https://jitpack.io/com/github/sohilsayed/aniyomi-mpv-lib/${{ env.VERSION_TAG }}/build.log" > /dev/null || true

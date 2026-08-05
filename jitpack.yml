@@ -1,9 +1,12 @@
 jdk:
   - openjdk17
-env:
-  RELEASE_VERSION: "1.17.n"
 before_install:
+  # Derive the version from the tag being built so JitPack always republishes
+  # this release's AAR instead of a stale one from an earlier version.
+  - export RELEASE_VERSION="$(git describe --tags --exact-match 2>/dev/null || git describe --tags --abbrev=0)"
   - mkdir -p app/build/outputs/aar
-  - wget -O app/build/outputs/aar/aniyomi-mpv-lib-release.aar https://github.com/jmir1/mpv-android/releases/download/$RELEASE_VERSION/aniyomi-mpv-lib-$RELEASE_VERSION.aar
+  - wget -q -O app/build/outputs/aar/aniyomi-mpv-lib-release.aar https://github.com/sohilsayed/aniyomi-mpv-lib/releases/download/$RELEASE_VERSION/aniyomi-mpv-lib-$RELEASE_VERSION.aar || true
 install:
-  - ./gradlew app:publishBarPublicationToMavenLocal
+  # JitPack runs a single shell for each list entry; chain with && so a missing
+  # or empty AAR fails the build instead of publishing a 0-byte artifact.
+  - test -s app/build/outputs/aar/aniyomi-mpv-lib-release.aar && test $(stat -c%s app/build/outputs/aar/aniyomi-mpv-lib-release.aar) -gt 1000000 && ./gradlew app:publishBarPublicationToMavenLocal
